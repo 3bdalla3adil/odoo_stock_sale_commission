@@ -5,7 +5,7 @@ from odoo import models, fields, api
   #===  PIPELINE  =========== PURCHASE ==> STOCK ==> SALES ==> ACCOUNT =======================================
   #===========================================================================================================
 
-  #ToDo:Identify Commissioner (Contact)
+  #ToDo:Identify Commissioner (Contact) DONE!
   #ToDo:Identify Commissioned Product (Stock)
   #ToDo:Identify Commission percentage value (Stock)
   #ToDo:Mark Commissioned PO as Commissioned Order (purchase)
@@ -29,7 +29,11 @@ class PO(models.Model):
     def button_confirm(self):
         res = super(PO).button_confirm()
 
+        return res
 
+
+class PT(models.Model):
+    _inherit = 'product.template'
 class SP(models.Model):
     _inherit = 'stock.picking'
 
@@ -40,35 +44,19 @@ class SO(models.Model):
     _inherit = 'sale.order'
 
     commissioned_order = fields.Boolean(string="Commissioned Order")
-    commissioner_id = fields.Many2one('res.partner', string="Commissioner")
+    commissioner_id = fields.Many2one('res.partner',domain=[('is_commissioner','=',True)], string="Commissioner")
     # value = fields.Float()
 
     def action_confirm(self):
         res = super(SO, self).action_confirm()
-        if self.invoice_status == 'to invoice':
-            self.create_invoice()
-        return res
+        #ToDo:
 
-    def create_invoice(self):
-        invoice_vals = {
-            'partner_id': self.partner_id.id,
-            'type': 'out_invoice',
-            'invoice_line_ids': [(0, 0, {
-                'name': line.product_id.name,
-                'quantity': line.product_uom_qty,
-                'price_unit': line.price_unit,
-                'account_id': self.determine_invoice_account(line.product_id),
-            }) for line in self.order_line],
-        }
-        invoice = self.env['account.move'].create(invoice_vals)
-        invoice.action_post()
+        return res
 
     def determine_invoice_account(self, product):
         # determine account based on product or settings
         settings = self.env['res.config.settings'].search([])  # Assuming ID 1 for settings
-        if product.type == 'service':
-            return settings.income_account_id.id
-        elif product.type == 'product':
+        if product.type == 'product':
             return settings.inventory_account_id.id
         else:
             return settings.default_account_id.id
@@ -83,7 +71,6 @@ class AJ(models.Model):
     _inherit = "account.journal"
 
     commission_journal = fields.Boolean('Commission Journal')
-
 
 # class RCS(models.TransientModel):
 #     _inherit = 'res.config.settings'
