@@ -2,15 +2,10 @@
 from odoo import models, fields, api
 
   #===========================================================================================================
-  #===  PIPELINE  =========== PURCHASE ==> STOCK ==> SALES ==> ACCOUNT =======================================
+  #==== PIPELINE ============ PURCHASE ==> STOCK ==> SALES ==> ACCOUNT =======================================
   #===========================================================================================================
 
-  #ToDo:Identify Commissioner (Contact) DONE!
-  #ToDo:Identify Commissioned Product (Stock)
-  #ToDo:Identify Commission percentage value (Stock)
-  #ToDo:Mark Commissioned PO as Commissioned Order (purchase)
-  #ToDo:Mark PO Commissioned Order Product as consignment product (purchase)
-  #ToDo:Identify Expense Account, Income Account, And Prepayment Account (sales,account)
+  #ToDo:Identify Expense Account, Income Account, And Prepayment Account (sales,account) need to configure properity accounts first
 
 
 class RP(models.Model):
@@ -22,59 +17,52 @@ class RP(models.Model):
 class PO(models.Model):
     _inherit = 'purchase.order'
 
-    commissioned_order = fields.Boolean(string="Commissioned Order")
-    consignment_product = fields.Boolean(string="Consignment Product")
-    #ToDo:Create Percentage Float Field
-
+    is_commissioned = fields.Boolean(string="Commissioned Order")
+    commissioner_id = fields.Many2one('res.partner',domain=[('is_commissioner','=',True)], string="Commissioner")
+    
+    
     def button_confirm(self):
-        res = super(PO).button_confirm()
+        res = super(PO,self).button_confirm()
+        if self.commissioner_id:
+            self.is_commissioned = True
+            self.product_id.is_consignment = True
 
         return res
 
 
-class PT(models.Model):
-    _inherit = 'product.template'
+class PP(models.Model):
+    _inherit = 'product.product'
+    """Class inherited to add the custom fields to the model"""
+
+    commission_percentage = fields.Float(string="Commission %")
+    is_consignment = fields.Boolean(string="Is Consignment")
+    commissioner_id = fields.Many2one('res_partner',domain=[('is_commissioner','=',True)], string="Commissioner")
+
+
 class SP(models.Model):
     _inherit = 'stock.picking'
 
-    commission_percentage = fields.Float(string="Commission Percentage")
+    is_commission = fields.Boolean(string="Is Commission")
 
 
 class SO(models.Model):
     _inherit = 'sale.order'
 
-    commissioned_order = fields.Boolean(string="Commissioned Order")
     commissioner_id = fields.Many2one('res.partner',domain=[('is_commissioner','=',True)], string="Commissioner")
-    # value = fields.Float()
+
 
     def action_confirm(self):
-        res = super(SO, self).action_confirm()
-        #ToDo:
+        res = super(SO,self).action_confirm()
+        
+        
 
         return res
 
-    def determine_invoice_account(self, product):
-        # determine account based on product or settings
-        settings = self.env['res.config.settings'].search([])  # Assuming ID 1 for settings
-        if product.type == 'product':
-            return settings.inventory_account_id.id
-        else:
-            return settings.default_account_id.id
+class AA(models.Model):
+    _inherit = 'account.account'
 
-    # is_rebate_customer = fields.Boolean('Is Rebate Customer')
-    # follow_parent_company_rebate = fields.Boolean('Follow Parent Company Rebate', default=True)
-    # rebate_percentage_ids = fields.One2many('rebate.percentage', 'partner_id', string='Rebate Percentage')
-    # auto_reconcile = fields.Boolean('Auto Reconcile')
+    is_
 
 
-class AJ(models.Model):
-    _inherit = "account.journal"
 
-    commission_journal = fields.Boolean('Commission Journal')
 
-# class RCS(models.TransientModel):
-#     _inherit = 'res.config.settings'
-#
-#     expense_account_id = fields.Many2one('account.account', string="Expense Account")
-#     income_account_id = fields.Many2one('account.account', string="Income Account")
-#     prepayment_account_id = fields.Many2one('account.account', string="Prepayment Account")
