@@ -19,7 +19,7 @@ class PO(models.Model):
 
     is_commissioned = fields.Boolean(string="Commissioned Order")
     commissioner_id = fields.Many2one('res.partner',domain=[('is_commissioner','=',True)], string="Commissioner")
-    
+    #cids=1&menu_id=290&action=433&model=purchase.order&view_type=form&id=2
     
     def button_confirm(self):
         res = super(PO,self).button_confirm()
@@ -36,7 +36,7 @@ class PT(models.Model):
 
     commission_percentage = fields.Float(string="Commission %")
     is_consignment = fields.Boolean(string="Is Consignment")
-    commissioner_id = fields.Many2one('res_partner',domain=[('is_commissioner','=',True)], string="Commissioner")
+    commissioner_id = fields.Many2one('res.partner',domain=[('is_consignment','=',True)], string="Commissioner")
 
 
 class PP(models.Model):
@@ -45,7 +45,7 @@ class PP(models.Model):
 
     commission_percentage = fields.Float(string="Commission %")
     is_consignment = fields.Boolean(string="Is Consignment")
-    commissioner_id = fields.Many2one('res_partner',domain=[('is_commissioner','=',True)], string="Commissioner")
+    commissioner_id = fields.Many2one('res.partner',domain=[('is_consignment','=',True)], string="Commissioner")
 
 
 class SP(models.Model):
@@ -53,11 +53,10 @@ class SP(models.Model):
 
     is_commission = fields.Boolean(string="Is Commissioned", compute="_compute_is_commission")
 
+    @api.depends('product_id')
     def _compute_is_commission(self):
         if self.product_id.is_consignment:
             self.is_commission = True
-           
-        return res
     
 
 class SO(models.Model):

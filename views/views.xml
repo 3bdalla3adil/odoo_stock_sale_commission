@@ -18,12 +18,9 @@
         <field name="arch" type="xml">
             <xpath expr="//label[@for='purchase_ok']"
                    position="after">
-                <field name="is_commissioned"/>
-                <label for="is_commissioned"/>
-                <field name="is_commissioner"/>
-                <label for="is_commissioner"/>
+                <field name="is_consignment"/>
+                <field name="commissioner_id"/>
                 <field name="commission_percentage"/>
-                <label for="commission_percentage"/>   
             </xpath>
         </field>
     </record>
@@ -35,12 +32,9 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='barcode']"
                    position="after">
-                <field name="is_commissioned"/>
-                <label for="is_commissioned"/>
-                <field name="is_commissioner"/>
-                <label for="is_commissioner"/>
+                <field name="is_consignment"/>
+                <field name="commissioner_id"/>
                 <field name="commission_percentage"/>
-                <label for="commission_percentage"/>   
             </xpath>
         </field>
     </record>
@@ -53,7 +47,6 @@
             <xpath expr="//field[@name='picking_type_id']"
                    position="after">
                 <field name="is_commission"/>
-                <label for="is_commission"/>
             </xpath>
         </field>
     </record>
@@ -64,7 +57,7 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='sale_order_template_id']" position="after">
+            <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="commissioner_id"/>
             </xpath>
         </field>
