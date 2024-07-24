@@ -30,6 +30,15 @@ class PO(models.Model):
         return res
 
 
+class PT(models.Model):
+    _inherit = 'product.template'
+    """Class inherited to add the custom fields to the model"""
+
+    commission_percentage = fields.Float(string="Commission %")
+    is_consignment = fields.Boolean(string="Is Consignment")
+    commissioner_id = fields.Many2one('res_partner',domain=[('is_commissioner','=',True)], string="Commissioner")
+
+
 class PP(models.Model):
     _inherit = 'product.product'
     """Class inherited to add the custom fields to the model"""
@@ -42,27 +51,18 @@ class PP(models.Model):
 class SP(models.Model):
     _inherit = 'stock.picking'
 
-    is_commission = fields.Boolean(string="Is Commission")
+    is_commission = fields.Boolean(string="Is Commissioned", compute="_compute_is_commission")
 
+    def _compute_is_commission(self):
+        if self.product_id.is_consignment:
+            self.is_commission = True
+           
+        return res
+    
 
 class SO(models.Model):
     _inherit = 'sale.order'
 
     commissioner_id = fields.Many2one('res.partner',domain=[('is_commissioner','=',True)], string="Commissioner")
-
-
-    def action_confirm(self):
-        res = super(SO,self).action_confirm()
-        
-        
-
-        return res
-
-class AA(models.Model):
-    _inherit = 'account.account'
-
-    is_
-
-
 
 
