@@ -19,7 +19,7 @@ class PO(models.Model):
 
     is_commissioned = fields.Boolean(string="Commissioned Order")
     commissioner_id = fields.Many2one('res.partner',domain=[('is_commissioner','=',True)], string="Commissioner")
-    #cids=1&menu_id=290&action=433&model=purchase.order&view_type=form&id=2
+
     
     def button_confirm(self):
         res = super(PO,self).button_confirm()
@@ -58,10 +58,31 @@ class SP(models.Model):
         if self.product_id.is_consignment:
             self.is_commission = True
     
+class AM(models.Model):
+    _inherit = 'account.move'   
+
+    def action_confirm(self):
+        
+        res = super(AM,self).action_confirm()
+
+        for line in self.invoice_line_ids:
+            if line.product_id.is_consignment:
+                line.unit_price /= self.product_id.commission_percentage
+                
+        return res
 
 class SO(models.Model):
     _inherit = 'sale.order'
 
     commissioner_id = fields.Many2one('res.partner',domain=[('is_commissioner','=',True)], string="Commissioner")
 
+
+    def action_confirm(self):
+        
+        res = super(SO,self).button_confirm()
+
+        for line in self.order_line:
+            if line.product_id.is_consignment:
+                line.unit_price /= self.product_id.commission_percentage
+        return res
 
